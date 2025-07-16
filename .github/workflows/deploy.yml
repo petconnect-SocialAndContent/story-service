@@ -5,7 +5,7 @@ on:
     branches:
       - prod
     paths:
-      - "story-service/**"
+      - "**" # Puedes ajustar si quieres solo cambios en ciertas carpetas
       - ".github/workflows/deploy.yml"
 
 env:
@@ -21,6 +21,17 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests
+        run: npm test
+
       - name: Set up Docker
         uses: docker/setup-buildx-action@v3
 
@@ -32,13 +43,7 @@ jobs:
 
       - name: Build and push Docker image
         run: |
-          cd story-service
           docker build -t $IMAGE_NAME:${{ github.sha }} .
           docker push $IMAGE_NAME:${{ github.sha }}
           docker tag $IMAGE_NAME:${{ github.sha }} $IMAGE_NAME:latest
           docker push $IMAGE_NAME:latest
-
-      # Descomentar y adaptar según el método de deploy (ECS, EC2, etc.)
-      # - name: Deploy to AWS ECS/EC2
-      #   run: |
-      #     echo "Aquí se haría el deploy a AWS ECS/EC2, usando la imagen: $IMAGE_NAME:${{ github.sha }}"
